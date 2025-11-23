@@ -2,7 +2,7 @@
 #EXTM3U
 ######################## SIYAM LIVE TV ####################################################
 
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/en/1/11/T_Sports_logo.png" group-title="SPORTS", T-Sports [1]
+#EXTINF:-1 tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS77rCz4WMUKd6zMCbYdyl2sn0E5YDpVHjYn3iVws8OOg&s=10" group-title="SPORTS", T-Sports [1]
 http://203.18.159.115/T_Sports_TG_josharmy007/index.m3u8
 #EXTINF:-1 group-title="News 🇧🇩" tvg-logo=" ", Somoy TV 
 https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=1692000.m3u8
