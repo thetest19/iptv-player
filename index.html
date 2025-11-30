@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00b4db, #0083b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .player-section {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        #playerContainer {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            position: relative;
+            background: #000;
+        }
+
+        #playerContainer video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(20, 20, 35, 0.9);
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .channel-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .channel-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .server-section {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #00b4db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: "▶";
+            font-size: 1rem;
+        }
+
+        .server-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .server-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .server-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #00b4db, #0083b0);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .server-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .server-btn:hover::before {
+            transform: scaleY(1);
+        }
+
+        .server-btn.active {
+            background: rgba(0, 180, 219, 0.2);
+            border-color: #00b4db;
+        }
+
+        .server-btn.active::before {
+            transform: scaleY(1);
+        }
+
+        .server-quality {
+            background: rgba(0, 180, 219, 0.3);
+            color: #00b4db;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: rgba(20, 20, 35, 0.9);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .player-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .server-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Streaming Player</h1>
+            <p class="subtitle">Watch your favorite channels in high quality</p>
+        </header>
+        
+        <div class="player-section">
+            <div id="playerContainer">
+                <!-- Video player will be inserted here -->
+            </div>
+            
+            <div class="player-controls">
+                <div class="channel-info">
+                    <div class="channel-logo">TS</div>
+                    <div class="channel-name">T Sports</div>
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="control-btn" id="playBtn">▶</button>
+                    <button class="control-btn" id="pauseBtn">⏸</button>
+                    <button class="control-btn" id="muteBtn">🔊</button>
+                    <button class="control-btn" id="fullscreenBtn">⛶</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="server-section">
+            <h2 class="section-title">Available Channels</h2>
+            <div class="server-buttons">
+                <button class="server-btn active" data-url="http://203.18.159.115/T_Sports_TG_josharmy007/index.m3u8">
+                    T Sports
+                    <span class="server-quality">Server 1</span>
+                </button>
+                <button class="server-btn" data-url="https://d35j504z0x2vu2.cloudfront.net/v1/manifest/0bc8e8376bd8417a1b6761138aa41c26c7309312/9xm/a731c680-6a62-4174-bc98-186fe654724a/0.m3u8">
+                    9xm Music
+                    <span class="server-quality">Server 2</span>
+                </button>
+                <button class="server-btn" data-url="https://livecdn.live247stream.com/joomusic/tv/joomusic/stream/chunks.m3u8?nimblesessionid=393142636">
+                    J Music
+                    <span class="server-quality">Server 3</span>
+                </button>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Streaming: T Sports</span>
+                </div>
+                <div class="status-text">Ready to play</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Streaming Player &copy; 2023 | All channels are provided for demonstration purposes</p>
+        </footer>
+    </div>
+
+    <!-- Include HLS.js library for streaming support -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let videoPlayer;
+            let hls;
+            let currentStream = "http://203.18.159.115/T_Sports_TG_josharmy007/index.m3u8";
+            let isPlaying = false;
+            
+            // Create video element
+            const playerContainer = document.getElementById('playerContainer');
+            videoPlayer = document.createElement('video');
+            videoPlayer.controls = true;
+            videoPlayer.style.width = '100%';
+            videoPlayer.style.height = '100%';
+            playerContainer.appendChild(videoPlayer);
+            
+            // Initialize HLS.js if browser doesn't support native HLS
+            function initPlayer(streamUrl) {
+                if (hls) {
+                    hls.destroy();
+                }
+                
+                if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Native HLS support (Safari)
+                    videoPlayer.src = streamUrl;
+                    updateStatus("Loading stream...");
+                } else if (Hls.isSupported()) {
+                    // HLS.js for other browsers
+                    hls = new Hls();
+                    hls.loadSource(streamUrl);
+                    hls.attachMedia(videoPlayer);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        updateStatus("Stream loaded successfully");
+                    });
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.error("HLS Error:", data);
+                        if (data.fatal) {
+                            updateStatus("Error loading stream");
+                        }
+                    });
+                } else {
+                    updateStatus("Your browser doesn't support HLS streaming");
+                }
+            }
+            
+            // Update status text
+            function updateStatus(message) {
+                document.querySelector('.status-text').textContent = message;
+            }
+            
+            // Update channel info
+            function updateChannelInfo(channelName) {
+                document.querySelector('.channel-name').textContent = channelName;
+                document.querySelector('.channel-logo').textContent = channelName.charAt(0);
+                document.querySelector('.status-indicator span').textContent = `Streaming: ${channelName}`;
+            }
+            
+            // Initialize with default stream
+            initPlayer(currentStream);
+            
+            // Server button event listeners
+            const serverButtons = document.querySelectorAll('.server-btn');
+            serverButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    serverButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Get stream URL and channel name
+                    const streamUrl = this.getAttribute('data-url');
+                    const channelName = this.textContent.split('\n')[0].trim();
+                    
+                    // Update current stream and channel info
+                    currentStream = streamUrl;
+                    updateChannelInfo(channelName);
+                    updateStatus("Loading new stream...");
+                    
+                    // Initialize player with new stream
+                    initPlayer(streamUrl);
+                    
+                    // Auto-play the new stream
+                    videoPlayer.play().then(() => {
+                        isPlaying = true;
+                        updateStatus("Playing");
+                    }).catch(error => {
+                        console.error("Auto-play failed:", error);
+                        updateStatus("Click play to start streaming");
+                    });
+                });
+            });
+            
+            // Control button event listeners
+            document.getElementById('playBtn').addEventListener('click', function() {
+                videoPlayer.play().then(() => {
+                    isPlaying = true;
+                    updateStatus("Playing");
+                }).catch(error => {
+                    console.error("Play failed:", error);
+                    updateStatus("Error playing stream");
+                });
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                videoPlayer.pause();
+                isPlaying = false;
+                updateStatus("Paused");
+            });
+            
+            document.getElementById('muteBtn').addEventListener('click', function() {
+                videoPlayer.muted = !videoPlayer.muted;
+                this.textContent = videoPlayer.muted ? "🔇" : "🔊";
+            });
+            
+            document.getElementById('fullscreenBtn').addEventListener('click', function() {
+                if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.mozRequestFullScreen) {
+                    videoPlayer.mozRequestFullScreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
+                } else if (videoPlayer.msRequestFullscreen) {
+                    videoPlayer.msRequestFullscreen();
+                }
+            });
+            
+            // Video player event listeners
+            videoPlayer.addEventListener('play', function() {
+                isPlaying = true;
+                updateStatus("Playing");
+            });
+            
+            videoPlayer.addEventListener('pause', function() {
+                isPlaying = false;
+                updateStatus("Paused");
+            });
+            
+            videoPlayer.addEventListener('waiting', function() {
+                updateStatus("Buffering...");
+            });
+            
+            videoPlayer.addEventListener('playing', function() {
+                updateStatus("Playing");
+            });
+            
+            videoPlayer.addEventListener('error', function() {
+                updateStatus("Error loading stream");
+            });
+        });
+    </script>
+</body>
+</html>
